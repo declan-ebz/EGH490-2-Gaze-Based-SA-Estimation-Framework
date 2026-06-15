@@ -18,12 +18,19 @@ This repository presents a novel framework for real-time ego-centric driving sce
 
 ## Repository Structure
 
-* `ego_centric_analysis.py`: The master execution script running the core pipeline loop.
-* `config.py`: Centralizes all configurable hyperparameters, thresholds, and data paths.
-* `utils.py`: Provides utility functions for driver eye-gaze coordinate parsing, fixation math, projections, and plot layouts.
-* `models.py`: Defines the `TemporalObjectTracker` and the NetworkX-based `PersistentKnowledgeGraph` classes.
-* `data_samples/`: A placeholder directory for verifying files, containing sample gaze info (`.txt`), scene images (`.png`), scene depth maps (`.npy`), and face images (`.png`).
-* `pretrained_models/`: Target workspace for storing pretrained YOLOv8s weights and the SAM2.1 Hiera Large checkpoint.
+* `ego_centric_analysis.ipynb`: The master Google Colab notebook containing the complete execution pipeline.
+* `data_samples/`: Core directory containing verification assets:
+* `gaze_info/`: Input eye-tracking coordinates and telemetry files (`*_gaze.txt`).
+* `scene_ims/`: Input ego-centric driving video frame captures (`*_scene.png`).
+* `scene_depth/`: Pre-computed scene depth maps (`*_depth.npy`).
+* `face_ims/`: Input driver face tracking captures (`*_face.png`).
+
+
+* `pretrained_models/`: Local cache directory storing model architecture checkpoints:
+* `yolov8s.pt`: Pretrained object localization weights.
+* `sam2.1_hiera_large.pt`: Target checkpoint for temporal mask propagation.
+
+
 
 ---
 
@@ -39,74 +46,43 @@ cd EGH490-2-Gaze-Based-SA-Estimation-Framework
 
 ### 2. Google Colab Environment
 
-This project is optimized to run in a Google Colab notebook environment. Ensure you have access to a GPU runtime (`Runtime > Change runtime type > GPU`).
+This framework is optimized to run inside a Google Colab notebook environment. Ensure your active environment has a GPU runtime assigned (`Runtime > Change runtime type > GPU`).
 
 > [!IMPORTANT]
-> **Hardware Requirement**: This architecture requires a GPU runtime with a minimum of **15GB VRAM** (e.g., Google Colab T4, L4, or A100 instances) to seamlessly handle the combined memory overhead of YOLOv8, SAM2, and the quantized Qwen2.5-VL pipelines without throwing Out-Of-Memory (OOM) errors.
+> **Hardware Requirement**: This framework requires a GPU workspace with a minimum of **15GB VRAM** (e.g., Google Colab T4, L4, or A100 instances) to handle the combined memory footprint of YOLOv8, SAM2, and the quantized Qwen2.5-VL pipelines without encountering Out-Of-Memory (OOM) errors.
 
-### 3. Dependencies
+### 3. Verification Data and Model Checkpoints
 
-Install the required system and Python packages via your terminal or a Colab cell:
+All sample frame sequences and tracking coordinates are pre-packaged in the `data_samples/` folder.
 
-```bash
-pip install -r requirements.txt
+* **YOLOv8s**: Pre-trained road detection weights are included directly at `pretrained_models/yolov8s.pt`.
+* **SAM2**: The notebook provides a quick `wget` command cell to automatically pull down the heavy `sam2.1_hiera_large.pt` checkpoint straight into the `pretrained_models/` directory during setup.
 
-```
+### 4. Gemini API Key
 
-Key dependencies track:
-
-* `ultralytics` (for YOLOv8 spatial object detection)
-* `sam2` (Segment Anything Model 2 temporal video propagation library)
-* `transformers`, `accelerate`, `bitsandbytes` (for 4-bit VLM quantization and pipeline deployment)
-* `google-generativeai` (for Gemini API orchestration)
-* `opencv-python`, `numpy`, `matplotlib`, `networkx`
-
-### 4. Data and Model Paths
-
-**Data Layout:**
-The `data_samples/` directory expects a structured target folder matching your runtime ingestion pathways (e.g., `/Subject26_2_data`). This folder must contain `face_ims`, `gaze_info`, `scene_ims`, and `scene_depth` subdirectories. You can mount your Google Drive with this data asset or upload target samples directly into your environment workspace.
-
-**Model Weights:**
-
-* **YOLOv8s**: Ensure your pre-trained YOLO model is placed at the path configured in your script (`pretrained_models/yolov8s.pt`).
-* **SAM2**: The `sam2.1_hiera_large.pt` checkpoint file should be downloaded and placed directly inside `pretrained_models/`. Your execution workspace provides standard download commands for this.
-
-Verify or update all absolute local string indices inside `config.py` to seamlessly align with your system storage before launching.
-
-### 5. Gemini API Key
-
-To enable VLM features, multi-stage instructor evaluation prompts, and automated situational awareness scoring sweeps, you require a valid Google Gemini API Key. Store it securely in Colab's secrets manager side panel under the token key name: `GOOGLE_API_KEY`.
-
-> [!NOTE]
-> If executing this pipeline framework outside of a Google Colab environment (such as a local Linux shell or dedicated development server), replace the `userdata.get()` parsing blocks inside `ego_centric_analysis.py` with standard environment parsing logic: `os.environ.get("GOOGLE_API_KEY")`.
+To execute the multi-stage evaluation loops and generate driving instruction safety scores, you require a valid Google Gemini API Key. Store it securely in your Colab notebook secrets manager panel (the key icon on the left sidebar) under the specific token name: `GOOGLE_API_KEY`.
 
 ---
 
 ## Usage
 
-1. **Execute the Modular Pipeline (`ego_centric_analysis.py`)**:
-Run the master orchestrator to sequentially spin up and evaluate your architecture layers:
-* Sets environment setups and ingests configuration thresholds from `config.py`.
-* Ingests and processes gaze data telemetry arrays to detect true fixations.
-* Run object localization and tracking layers with active Qwen2.5-VL semantic triage.
-* Propagates mask overlays and frame prompts smoothly via SAM2 temporal tracking loops.
-* Compiles and records nodes inside the active NetworkX `PersistentKnowledgeGraph`.
-* Fires multi-stage Gemini loops to parse driver advice logs and calculate safety metrics.
-* Saves final frame visual metrics and assembles video clips.
+1. **Open and Run the Notebook (`ego_centric_analysis.ipynb`)**:
+Open the master file in Google Colab and run the cells sequentially to execute the full pipeline pipeline steps:
+* Ingests system dependencies and sets up local workspace paths.
+* Parses spatial data logs to map eye-gaze tracking frames.
+* Runs YOLOv8 object localization paired with Qwen2.5-VL semantic hazard triage.
+* Propagates mask boundaries over temporal sequences via SAM2 memory blocks.
+* Populates and updates the active NetworkX `PersistentKnowledgeGraph` state tracking engine.
+* Queries multi-stage Gemini safety loops to generate context-aware driving advice and driver situational awareness scores.
+* Visualizes live framework states and compiles the final evaluation clip.
 
-
-
-```bash
-python ego_centric_analysis.py
-
-```
 
 2. **Generated Outputs**:
-The execution loop produces the following outputs:
-* `gaze_prompts.json`: Compiled bounding and point tracking cues formatted for SAM2 consumption.
-* `scene_segmentations/`: Workspace directory containing system visualization maps for each frame (`eval_map_*.jpg`).
-* `scene_segmentations/gemini_advice.json`: A structural JSON database logging selected driver alerts and safety outputs generated per frame index.
-* `scene_segmentations/full_driving_scene_graph.mp4`: A compiled, high-definition video summary mapping out camera view targets, fixation networks, and rolling memory timelines simultaneously.
+The execution loop generates the following assets under your session folder:
+* `gaze_prompts.json`: Processed coordinate gaze tracking points formatted for SAM2 consumption.
+* `scene_segmentations/`: Workspace path containing frame overlay images (`eval_map_*.jpg`).
+* `scene_segmentations/gemini_advice.json`: A structural database logging selected driver alerts and safety scores matched per frame index.
+* `scene_segmentations/full_driving_scene_graph.mp4`: A compiled, high-definition video summary charting camera view targets, fixation network maps, and rolling memory timelines simultaneously.
 
 
 
