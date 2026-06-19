@@ -12,18 +12,6 @@ __pycache__/
 env/
 venv/
 
-# --- Large Datasets & Local Hardware Storage ---
-/local_ims/
-/data_samples/scene_depth/*.npy
-/data_samples/face_ims/*.png
-/data_samples/scene_ims/*.png
-/data_samples/gaze_info/*.txt
-
-# --- Large Model Checkpoints ---
-/pretrained_models/*.pt
-/pretrained_models/*.yaml
-/segment-anything-2/
-
 # --- Downstream Pipeline Evaluation Outputs ---
 /scene_segmentations/
 *.mp4
